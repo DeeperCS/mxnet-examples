@@ -72,14 +72,25 @@ model.save(model_prefix)
 mx.callback.save_checkpoint('model/officebox', 0, network, executor.arg_dict, executor.aux_dict)
 
 ## 2-1. load model
-# Load the pre-trained model
+# Load the pre-trained model (param and json)
 prefix = "models/mnist"
 num_epoch = 10
 model = mx.model.FeedForward.load(prefix, num_epoch, ctx=mx.gpu(), numpy_batch_size=1)
 print('model {} loaded'.format(prefix+str(num_epoch)))
 
-## 2-2. load checkpoint
+## 2-2. load checkpoint (param and json)
 sym, arg_params, aux_params = mx.model.load_checkpoint(prefix, num_epoch)
+
+## 2-3. load checkpoint (only *.param file)
+save_dict = mx.nd.load('vgg/%s-%04d.params' % ('vgg16', 1))
+arg_params = {}
+aux_params = {}
+for k, v in save_dict.items():
+    tp, name = k.split(':', 1)
+    if tp == 'arg':
+        arg_params[name] = v
+    if tp == 'aux':
+        aux_params[name] = v
 '''
 mod.fit(train, eval_data=val, optimizer_params=optim_args,
             eval_metric=eval_metrics, num_epoch=args.num_epochs,
